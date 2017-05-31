@@ -1,0 +1,24 @@
+import requests
+import html5lib
+from urllib.request import urlopen
+from bs4 import BeautifulSoup 
+
+for pp in range(1,35):
+    url="http://feebee.com.tw/all/%E8%80%81%E6%A5%8A/?sort=p&mode=l&page="+str(pp)
+    html=urlopen(url)
+    bsobj=BeautifulSoup(html.read(),"html5lib")
+
+    page="頁次-"+str(pp)
+    print(page)
+    
+    for childli in bsobj.find_all("li",{"class":"fb-u"}):  
+        for childdiv in childli.find_all("div",{"class":"desc"}): 
+            print(page, end='')
+            for name in childdiv.find_all("h2",{"class":"large"}): 
+                nameF=name.get_text().replace(" ","").replace("\n","")
+                print(","+nameF, end='')
+            for price in childdiv.find_all("em",{"class":"xlarge"}):
+                print(","+price.get_text() , end='')
+            for source in childdiv.find_all("",{"class":"source"}):
+                sourceF=source.get_text().replace(" ","").replace("\n","")
+                print (","+sourceF )
