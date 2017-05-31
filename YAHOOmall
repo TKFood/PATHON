@@ -1,0 +1,40 @@
+import requests as rq
+import html5lib
+from urllib.request import urlopen
+from bs4 import BeautifulSoup 
+
+print("YAHOOmall")
+
+url = "https://tw.search.mall.yahoo.com/search/mall/product?p=%E8%80%81%E6%A5%8A&qt=product&kw=%E8%80%81%E6%A5%8A&cid=152983814&clv=4" 
+response = rq.get(url) # 用 requests 的 get 方法把網頁抓下來
+html_doc = response.text # text 屬性就是 html 檔案
+soup = BeautifulSoup(response.text, "lxml") # 指定 lxml 作為解析器
+
+for div in soup.findAll('div',{"class":"srp-pdimage"}):
+    for linkA in div.findAll('a'):
+        #print(linkA.prettify())
+        print (linkA.get('href'))        
+        #childurl="https://tw.mall.yahoo.com/item/%E8%80%81%E6%A5%8A-%E5%A5%BD%E9%81%8B%E4%BE%86%E7%A6%8F%E8%A2%8B-%E9%B9%B9%E8%9B%8B%E9%BB%83%E9%A4%85-230g-%E8%A2%8B-%E3%80%90%E5%A5%BD%E9%A3%9F%E5%AE%B6%E3%80%91%E6%9C%89%E6%95%88%E6%9C%9F%E9%99%90-p0263111646462"
+        childurl=linkA.get('href')
+        childresponse = rq.get(childurl) # 用 requests 的 get 方法把網頁抓下來
+        childhtml_doc = childresponse.text # text 屬性就是 html 檔案
+        childsoup = BeautifulSoup(childhtml_doc, "lxml") # 指定 lxml 作為解析器
+
+        for childdivleft in childsoup.find_all("div",{"class":"left"}): 
+            for childulleft in childdivleft.find_all('ul',{"class":""}):
+                for childlileft in childulleft.find_all('li'):
+                    print(childlileft.text)
+
+
+        for childname in childsoup.find_all("span",{"itemprop":"name"}):
+            print('商品:'+childname.text)
+
+        for childdiv in childsoup.find_all("div",{"class":"points enlarge-offset"}):
+            for childprice in childdiv.find_all("span",{"class":"price"}):
+                print('單價:'+childprice.text)
+        for childdiv in childsoup.find_all("div",{"class":"points"}):
+            for childprice in childdiv.find_all("span",{"class":"has_promo_price"}):
+                print('單價:'+childprice.text)
+
+    
+##print(soup.prettify()) # 把排版後的 html 印出來
