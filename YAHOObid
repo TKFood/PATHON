@@ -1,0 +1,43 @@
+import requests as rq
+import html5lib
+from urllib.request import urlopen
+from bs4 import BeautifulSoup 
+import re
+
+YAHOObid={}
+stringhttp="h"
+print("YAHOObid")
+
+for pp in range(1,5):
+    url = "https://tw.search.bid.yahoo.com/search/auction/product;_ylt=ArsR5FEQq6AVVdDpnL3uSOdyFbN8?p=%E8%80%81%E6%A5%8A&qt=product&kw=%E8%80%81%E6%A5%8A&cid=0&clv=0&acu=0&property=auction&sub_property=auction&srch=product&act=srp&pg="+str(pp)+"&poffset=0&aoffset="+str((pp-1)*60) 
+    response = rq.get(url) # 用 requests 的 get 方法把網頁抓下來
+    html_doc = response.text # text 屬性就是 html 檔案
+    soup = BeautifulSoup(response.text, "lxml") # 指定 lxml 作為解析器
+    
+    page="頁次-"+str(pp)
+    print(page)
+
+    for div in soup.findAll('div',{"class":"srp-pdimage yui3-u"}):
+        for linkA in div.findAll('a', attrs={'href': re.compile("^http")}):
+            #print(linkA.prettify())
+            #print (linkA.get('href')) 
+
+            #childurl="https://tw.bid.yahoo.com/item/%E3%80%90%E9%87%87%E6%87%8B%E4%BC%B4%E6%89%8B%E7%A6%AE%E3%80%91%E6%BB%BF-499-%E5%85%8D%E9%81%8B-%E7%8F%BE%E8%B2%A8%E4%BE%9B%E6%87%89-%E8%80%81%E6%A5%8A%E9%B9%B9%E8%9B%8B%E9%BB%83%E9%A4%85-7-100183142797"
+            childurl=linkA.get('href')
+            childresponse = rq.get(childurl) # 用 requests 的 get 方法把網頁抓下來
+            childhtml_doc = childresponse.text # text 屬性就是 html 檔案
+            childsoup = BeautifulSoup(childhtml_doc, "lxml") # 指定 lxml 作為解析器        
+
+            for childdiv in childsoup.find_all("div",{"class":"bd"}): 
+                for childtitle in childdiv.find_all('span',{"class":"has-sold"}):
+                    YAHOObid['info']=childtitle.text+' '
+                    print(YAHOObid['info'], end='')
+                for childname in childdiv.find_all('h1',{"class":"title"}):
+                    YAHOObid['商品']=' ,商品:'+childname.text
+                    print(YAHOObid['商品'], end='')
+                for childprice in childdiv.find_all('li',{"class":"item-info item-sale-price"}):
+                    for childprice1 in childprice.find_all('span',{"class":"number"}):
+                            YAHOObid['單價']=' ,單價:'+childprice1.text
+                            print(YAHOObid['單價'])
+
+print("FINISH")
